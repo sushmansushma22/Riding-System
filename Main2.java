@@ -1,83 +1,132 @@
-class Subject {
-    String name;
-    String teacher;
-    String room;
+class Ride {
+    int rideId;
+    String pickup;
+    String drop;
+    double fare;
 
-    Subject(String name, String teacher, String room) {
-        this.name = name;
-        this.teacher = teacher;
-        this.room = room;
+    Ride(int rideId, String pickup, String drop, double fare) {
+        this.rideId = rideId;
+        this.pickup = pickup;
+        this.drop = drop;
+        this.fare = fare;
     }
 }
 
-public class main2 {
+class Node {
+    Ride data;
+    Node next;
 
-    static int N = 3;
+    Node(Ride data) {
+        this.data = data;
+        this.next = null;
+    }
+}
 
-    static Subject[] subjects = {
-            new Subject("Math", "A", "R1"),
-            new Subject("Science", "B", "R2"),
-            new Subject("English", "A", "R3")
-    };
+class RideHistory {
+    Node head;
 
-    static String[] slots = {"Slot1", "Slot2", "Slot3"};
 
-    static Subject[] result = new Subject[N];
-    static boolean[] used = new boolean[N]; // prevent duplicates
+    void addRide(Ride r) {
+        Node newNode = new Node(r);
 
+        if (head == null) {
+            head = newNode;
+            return;
+        }
+
+        Node temp = head;
+        while (temp.next != null) {
+            temp = temp.next;
+        }
+        temp.next = newNode;
+    }
+
+
+    void deleteLastRide() {
+        if (head == null) {
+            System.out.println("No rides to delete");
+            return;
+        }
+
+        if (head.next == null) {
+            head = null;
+            return;
+        }
+
+        Node temp = head;
+        while (temp.next.next != null) {
+            temp = temp.next;
+        }
+        temp.next = null;
+    }
+
+
+    void displayRides() {
+        Node temp = head;
+        while (temp != null) {
+            System.out.println("RideID: " + temp.data.rideId +
+                    ", Pickup: " + temp.data.pickup +
+                    ", Drop: " + temp.data.drop +
+                    ", Fare: " + temp.data.fare);
+            temp = temp.next;
+        }
+    }
+
+
+    void searchRide(String location) {
+        Node temp = head;
+        boolean found = false;
+
+        while (temp != null) {
+            if (temp.data.pickup.equals(location) || temp.data.drop.equals(location)) {
+                System.out.println("Found Ride -> ID: " + temp.data.rideId);
+                found = true;
+            }
+            temp = temp.next;
+        }
+
+        if (!found) {
+            System.out.println("No ride found for location: " + location);
+        }
+    }
+
+
+    void reverseHistory() {
+        Node prev = null;
+        Node current = head;
+        Node next;
+
+        while (current != null) {
+            next = current.next;
+            current.next = prev;
+            prev = current;
+            current = next;
+        }
+
+        head = prev;
+    }
+}
+
+public class Main1 {
     public static void main(String[] args) {
+        RideHistory history = new RideHistory();
 
-        if (generateTimetable(0)) {
-            System.out.println("Timetable Generated:");
-            display();
-        } else {
-            System.out.println("No valid timetable found");
-        }
-    }
+        history.addRide(new Ride(1, "Bangalore", "Mysore", 500));
+        history.addRide(new Ride(2, "Delhi", "Agra", 300));
+        history.addRide(new Ride(3, "Mumbai", "Pune", 400));
 
+        System.out.println("All Rides:");
+        history.displayRides();
 
-    static boolean generateTimetable(int index) {
-        if (index == N) {
-            return true;
-        }
+        System.out.println("\nSearch:");
+        history.searchRide("Agra");
 
-        for (int i = 0; i < N; i++) {
+        System.out.println("\nDelete Last Ride:");
+        history.deleteLastRide();
+        history.displayRides();
 
-            if (!used[i] && isSafe(subjects[i], index)) {
-
-                result[index] = subjects[i];
-                used[i] = true;
-
-                if (generateTimetable(index + 1)) {
-                    return true;
-                }
-
-
-                result[index] = null;
-                used[i] = false;
-            }
-        }
-        return false;
-    }
-
-
-    static boolean isSafe(Subject sub, int slot) {
-        for (int i = 0; i < slot; i++) {
-
-            if (result[i] != null && result[i].room.equals(sub.room)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    static void display() {
-        for (int i = 0; i < N; i++) {
-            System.out.println(slots[i] + " -> " +
-                    result[i].name +
-                    " (Teacher: " + result[i].teacher +
-                    ", Room: " + result[i].room + ")");
-        }
+        System.out.println("\nReverse History:");
+        history.reverseHistory();
+        history.displayRides();
     }
 }
